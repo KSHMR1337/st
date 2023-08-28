@@ -114,37 +114,72 @@ unsigned int tabspaces = 8;
 /* bg opacity */
 float alpha = 0.8;
 
+/* Red flavour colors */
+
+/* Terminal colors (16 first used in escape sequence) */
+/* static const char *colorname[] = { */
+/*   /1* 8 normal colors *1/ */
+/*   [0] = "#180a0a", /1* black   *1/ */
+/*   [1] = "#5D284F", /1* red     *1/ */
+/*   [2] = "#5A475F", /1* green   *1/ */
+/*   [3] = "#9B0830", /1* yellow  *1/ */
+/*   [4] = "#E2122E", /1* blue    *1/ */
+/*   [5] = "#9B2551", /1* magenta *1/ */
+/*   [6] = "#E0254C", /1* cyan    *1/ */
+/*   [7] = "#bbbbbb", /1* white   *1/ */
+
+
+/*   /1* 8 bright colors *1/ */
+/*   [8]  = "#9a7276",  /1* black   *1/ */
+/*   [9]  = "#5D284F",  /1* red     *1/ */
+/*   [10] = "#5A475F", /1* green   *1/ */
+/*   [11] = "#9B0830", /1* yellow  *1/ */
+/*   [12] = "#E2122E", /1* blue    *1/ */
+/*   [13] = "#9B2551", /1* magenta *1/ */
+/*   [14] = "#E0254C", /1* cyan    *1/ */
+/*   [15] = "#eeeeee", /1* white   *1/ */
+
+/* 	[255] = 0, */
+
+/* /1* special colors *1/ */
+/*   [256] = "#0b0a18", /1* background *1/ */
+/*   [257] = "#bbbbbb", /1* foreground *1/ */
+/*   [258] = "#dda4a9",     /1* cursor *1/ */
+/* }; */
+
+
+/* Purple flavour colors */
+
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
   /* 8 normal colors */
-  [0] = "#180a0a", /* black   */
+  [0] = "#230824", /* black   */
   [1] = "#5D284F", /* red     */
   [2] = "#5A475F", /* green   */
-  [3] = "#9B0830", /* yellow  */
-  [4] = "#E2122E", /* blue    */
-  [5] = "#9B2551", /* magenta */
-  [6] = "#E0254C", /* cyan    */
+  [3] = "#9b0860", /* yellow  */
+  [4] = "#d812e2", /* blue    */
+  [5] = "#b112e2", /* magenta */
+  [6] = "#a225e0", /* cyan    */
   [7] = "#bbbbbb", /* white   */
 
 
   /* 8 bright colors */
-  [8]  = "#9a7276",  /* black   */
-  [9]  = "#5D284F",  /* red     */
-  [10] = "#5A475F", /* green   */
-  [11] = "#9B0830", /* yellow  */
-  [12] = "#E2122E", /* blue    */
-  [13] = "#9B2551", /* magenta */
-  [14] = "#E0254C", /* cyan    */
+  [8]  = "#8a729a",  /* black   */
+  [9]  = "#5d285b",  /* red     */
+  [10] = "#54475f", /* green   */
+  [11] = "#7b089b", /* yellow  */
+  [12] = "#a412e2", /* blue    */
+  [13] = "#9b258b", /* magenta */
+  [14] = "#e025be", /* cyan    */
   [15] = "#eeeeee", /* white   */
 
 	[255] = 0,
 
 /* special colors */
-  [256] = "#0b0a18", /* background */
+  [256] = "#211229", /* background */
   [257] = "#bbbbbb", /* foreground */
-  [258] = "#dda4a9",     /* cursor */
+  [258] = "#bca4dd",     /* cursor */
 };
-
 
 /*
  * Default colors (colorname index)
