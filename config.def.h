@@ -119,39 +119,6 @@ unsigned int tabspaces = 8;
 float alpha = 0.8;
 float alphaUnfocused = 0.6;
 
-/* Red flavour colors */
-
-/* Terminal colors (16 first used in escape sequence) */
-/* static const char *colorname[] = { */
-/*     /1* 8 normal colors *1/ */
-/*     [0] = "#000000", /1* black   *1/ */
-/*     [1] = "#9B0830", /1* red     *1/ */
-/*     [2] = "#199b08", /1* green   *1/ */
-/*     [3] = "#9b8008", /1* yellow  *1/ */
-/*     [4] = "#080d9b", /1* blue    *1/ */
-/*     [5] = "#9b085b", /1* magenta *1/ */
-/*     [6] = "#08799b", /1* cyan    *1/ */
-/*     [7] = "#bbbbbb", /1* white   *1/ */
-
-/*     /1* 8 bright colors *1/ */
-/*     [8] = "#1c1c1c",  /1* black   *1/ */
-/*     [9] = "#E2122E",  /1* red     *1/ */
-/*     [10] = "#31e619", /1* green   *1/ */
-/*     [11] = "#deba1b", /1* yellow  *1/ */
-/*     [12] = "#161ddb", /1* blue    *1/ */
-/*     [13] = "#cf1d82", /1* magenta *1/ */
-/*     [14] = "#56c6e8", /1* cyan    *1/ */
-/*     [15] = "#eeeeee", /1* white   *1/ */
-
-/*     [255] = 0, */
-
-/*     /1* special colors *1/ */
-/*     [256] = "#ffffff", /1* cursor *1/ */
-/*     [257] = "#875156", /1* rev cursor *1/ */
-/*     [258] = "#000000", /1* background *1/ */
-/*     [259] = "#bbbbbb", /1* foreground *1/ */
-/* }; */
-
 /* Purple flavour colors */
 
 /* Terminal colors (16 first used in escape sequence) */
