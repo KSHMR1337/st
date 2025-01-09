@@ -152,39 +152,6 @@ static const char *colorname[] = {
     [259] = "#bbbbbb", /* foreground */
 };
 
-/* Purple flavour colors */
-
-/* /1* Terminal colors (16 first used in escape sequence) *1/ */
-/* static const char *colorname[] = { */
-/*     /1* 8 normal colors *1/ */
-/*     [0] = "#230824", /1* black   *1/ */
-/*     [1] = "#5D284F", /1* red     *1/ */
-/*     [2] = "#5A475F", /1* green   *1/ */
-/*     [3] = "#9b0860", /1* yellow  *1/ */
-/*     [4] = "#d812e2", /1* blue    *1/ */
-/*     [5] = "#b112e2", /1* magenta *1/ */
-/*     [6] = "#a225e0", /1* cyan    *1/ */
-/*     [7] = "#bbbbbb", /1* white   *1/ */
-
-/*     /1* 8 bright colors *1/ */
-/*     [8] = "#8a729a",  /1* black   *1/ */
-/*     [9] = "#5d285b",  /1* red     *1/ */
-/*     [10] = "#54475f", /1* green   *1/ */
-/*     [11] = "#7b089b", /1* yellow  *1/ */
-/*     [12] = "#a412e2", /1* blue    *1/ */
-/*     [13] = "#9b258b", /1* magenta *1/ */
-/*     [14] = "#e025be", /1* cyan    *1/ */
-/*     [15] = "#eeeeee", /1* white   *1/ */
-
-/*     [255] = 0, */
-
-/*     /1* special colors *1/ */
-/*     [256] = "#bca4dd", /1* cursor *1/ */
-/*     [257] = "#5a4080", /1* rev cursor *1/ */
-/*     [258] = "#211229", /1* background *1/ */
-/*     [259] = "#bbbbbb", /1* foreground *1/ */
-/* }; */
-
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
