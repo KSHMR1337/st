@@ -5,6 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
+
 static char *font =
     "Hack Nerd Font Mono:pixelsize=15:antialias=true:autohint=true";
 /* Spare fonts */
@@ -117,9 +118,6 @@ unsigned int tabspaces = 8;
 
 /* bg opacity */
 float alpha = 0.8;
-float alphaUnfocused = 0.6;
-
-/* Red flavour colors */
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -156,6 +154,7 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
+
 unsigned int defaultbg = 0;
 unsigned int bg = 232, bgUnfocused = 16;
 unsigned int defaultfg = 259;
@@ -195,38 +194,37 @@ static unsigned int defaultattr = 11;
  * Xresources preferences to load at startup
  */
 ResourcePref resources[] = {
-    {"font", STRING, &font},
-    {"color0", STRING, &colorname[0]},
-    {"color1", STRING, &colorname[1]},
-    {"color2", STRING, &colorname[2]},
-    {"color3", STRING, &colorname[3]},
-    {"color4", STRING, &colorname[4]},
-    {"color5", STRING, &colorname[5]},
-    {"color6", STRING, &colorname[6]},
-    {"color7", STRING, &colorname[7]},
-    {"color8", STRING, &colorname[8]},
-    {"color9", STRING, &colorname[9]},
-    {"color10", STRING, &colorname[10]},
-    {"color11", STRING, &colorname[11]},
-    {"color12", STRING, &colorname[12]},
-    {"color13", STRING, &colorname[13]},
-    {"color14", STRING, &colorname[14]},
-    {"color15", STRING, &colorname[15]},
-    {"background", STRING, &colorname[258]},
-    {"foreground", STRING, &colorname[259]},
-    {"cursorColor", STRING, &colorname[256]},
-    {"termname", STRING, &termname},
-    {"shell", STRING, &shell},
-    {"minlatency", INTEGER, &minlatency},
-    {"maxlatency", INTEGER, &maxlatency},
-    {"blinktimeout", INTEGER, &blinktimeout},
-    {"bellvolume", INTEGER, &bellvolume},
-    {"tabspaces", INTEGER, &tabspaces},
-    {"borderpx", INTEGER, &borderpx},
-    {"cwscale", FLOAT, &cwscale},
-    {"chscale", FLOAT, &chscale},
-    {"alpha", FLOAT, &alpha},
-    {"alphaUnfocused", FLOAT, &alphaUnfocused},
+		{ "font",         STRING,  &font },
+		{ "color0",       STRING,  &colorname[0] },
+		{ "color1",       STRING,  &colorname[1] },
+		{ "color2",       STRING,  &colorname[2] },
+		{ "color3",       STRING,  &colorname[3] },
+		{ "color4",       STRING,  &colorname[4] },
+		{ "color5",       STRING,  &colorname[5] },
+		{ "color6",       STRING,  &colorname[6] },
+		{ "color7",       STRING,  &colorname[7] },
+		{ "color8",       STRING,  &colorname[8] },
+		{ "color9",       STRING,  &colorname[9] },
+		{ "color10",      STRING,  &colorname[10] },
+		{ "color11",      STRING,  &colorname[11] },
+		{ "color12",      STRING,  &colorname[12] },
+		{ "color13",      STRING,  &colorname[13] },
+		{ "color14",      STRING,  &colorname[14] },
+		{ "color15",      STRING,  &colorname[15] },
+		{ "background",   STRING,  &colorname[258] },
+		{ "foreground",   STRING,  &colorname[259] },
+		{ "cursorColor",  STRING,  &colorname[256] },
+		{ "termname",     STRING,  &termname },
+		{ "shell",        STRING,  &shell },
+		{ "minlatency",   INTEGER, &minlatency },
+		{ "maxlatency",   INTEGER, &maxlatency },
+		{ "blinktimeout", INTEGER, &blinktimeout },
+		{ "bellvolume",   INTEGER, &bellvolume },
+		{ "tabspaces",    INTEGER, &tabspaces },
+		{ "borderpx",     INTEGER, &borderpx },
+		{ "cwscale",      FLOAT,   &cwscale },
+		{ "chscale",      FLOAT,   &chscale },
+		{ "alpha",        FLOAT,   &alpha },
 };
 
 /*
@@ -241,49 +239,49 @@ static uint forcemousemod = ShiftMask;
  * Beware that overloading Button1 will disable the selection.
  */
 static MouseShortcut mshortcuts[] = {
-    /* mask                 button   function        argument       release
-     * screen
-     */
-    {XK_ANY_MOD, Button2, selpaste, {.i = 0}, 1},
-    {ShiftMask, Button4, kscrollup, {.i = 1}, 0, S_PRI},
-    {ShiftMask, Button5, kscrolldown, {.i = 1}, 0, S_PRI},
-    {XK_ANY_MOD, Button4, ttysend, {.s = "\031"}},
-    {XK_ANY_MOD, Button5, ttysend, {.s = "\005"}},
+	/* mask                 button   function        argument       release  screen */
+	{ XK_ANY_MOD,           Button2, clippaste,      {.i = 0},      1 },
+	{ ShiftMask,            Button4, kscrollup,      {.i = 1},      0, S_PRI},
+	{ ShiftMask,            Button5, kscrolldown,    {.i = 1},      0, S_PRI},
+	{ XK_ANY_MOD,           Button4, kscrollup,      {.i = 1},      0, S_PRI },
+	{ XK_ANY_MOD,           Button5, kscrolldown,    {.i = 1},      0, S_PRI },
+	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"}, 0, S_ALT },
+	{ XK_ANY_MOD,           Button5, ttysend,        {.s = "\005"}, 0, S_ALT },
 };
 
 /* Internal keyboard shortcuts. */
 #define MODKEY Mod1Mask
-#define TERMMOD (ControlMask | ShiftMask)
+#define TERMMOD (ControlMask|ShiftMask)
 
-static char *openurlcmd[] = {"/bin/sh", "-c",
-                             "xurls | dmenu -l 10 -w $WINDOWID | xargs -r open",
-                             "externalpipe", NULL};
+static char *openurlcmd[] = { "/bin/sh", "-c",
+	"xurls | dmenu -l 10 -w $WINDOWID | xargs -r open",
+	"externalpipe", NULL };
 
-static char *setbgcolorcmd[] = {"/bin/sh", "-c", "printf '\033]11;#008000\007'",
-                                "externalpipein", NULL};
+static char *setbgcolorcmd[] = { "/bin/sh", "-c",
+	"printf '\033]11;#008000\007'",
+	"externalpipein", NULL };
 
 static Shortcut shortcuts[] = {
-    /* mask                 keysym          function         argument   screen
-     */
-    {XK_ANY_MOD, XK_Break, sendbreak, {.i = 0}},
-    {ControlMask, XK_Print, toggleprinter, {.i = 0}},
-    {ShiftMask, XK_Print, printscreen, {.i = 0}},
-    {XK_ANY_MOD, XK_Print, printsel, {.i = 0}},
-    {TERMMOD, XK_Prior, zoom, {.f = +1}},
-    {TERMMOD, XK_Next, zoom, {.f = -1}},
-    {TERMMOD, XK_Home, zoomreset, {.f = 0}},
-    {TERMMOD, XK_C, clipcopy, {.i = 0}},
-    {TERMMOD, XK_V, clippaste, {.i = 0}},
-    {TERMMOD, XK_O, changealpha, {.f = +0.05}},
-    {TERMMOD, XK_P, changealpha, {.f = -0.05}},
-    //{ TERMMOD,              XK_,           changealphaunfocused, {.f = +0.05}
-    //}, { TERMMOD,              XK_,           changealphaunfocused, {.f =
-    //-0.05} },
-    {ShiftMask, XK_Page_Up, kscrollup, {.i = -1}, S_PRI},
-    {ShiftMask, XK_Page_Down, kscrolldown, {.i = -1}, S_PRI},
-    {TERMMOD, XK_Y, selpaste, {.i = 0}},
-    {ShiftMask, XK_Insert, selpaste, {.i = 0}},
-    {TERMMOD, XK_Num_Lock, numlock, {.i = 0}},
+	/* mask                 keysym          function         argument   screen */
+	{ XK_ANY_MOD,           XK_Break,       sendbreak,       {.i =  0} },
+	{ ControlMask,          XK_Print,       toggleprinter,   {.i =  0} },
+	{ ShiftMask,            XK_Print,       printscreen,     {.i =  0} },
+	{ XK_ANY_MOD,           XK_Print,       printsel,        {.i =  0} },
+	{ TERMMOD,              XK_Prior,       zoom,            {.f = +1} },
+	{ TERMMOD,              XK_Next,        zoom,            {.f = -1} },
+	{ TERMMOD,              XK_Home,        zoomreset,       {.f =  0} },
+	{ TERMMOD,              XK_C,           clipcopy,        {.i =  0} },
+	{ TERMMOD,              XK_V,           clippaste,       {.i =  0} },
+	{ TERMMOD,              XK_O,           changealpha,     {.f = +0.05} },
+	{ TERMMOD,              XK_P,           changealpha,     {.f = -0.05} },
+	{ ShiftMask,            XK_Page_Up,     kscrollup,       {.i = -1}, S_PRI },
+	{ ShiftMask,            XK_Page_Down,   kscrolldown,     {.i = -1}, S_PRI },
+	{ TERMMOD,              XK_Y,           clippaste,       {.i =  0} },
+	{ ShiftMask,            XK_Insert,      clippaste,       {.i =  0} },
+	{ TERMMOD,              XK_Num_Lock,    numlock,         {.i =  0} },
+	{ TERMMOD,              XK_U,           externalpipe,    { .v = openurlcmd } },
+	{ TERMMOD,              XK_M,           externalpipein,  { .v = setbgcolorcmd } },
+	{ TERMMOD,              XK_Escape,      keyboard_select, { 0 } },
 };
 
 /*
@@ -308,16 +306,10 @@ static Shortcut shortcuts[] = {
  */
 
 /*
- * If you want keys other than the X11 function keys (0xFD00 - 0xFFFF)
- * to be mapped below, add them to this array.
- */
-static KeySym mappedkeys[] = {-1};
-
-/*
  * State bits to ignore when matching key or button events.  By default,
  * numlock (Mod2Mask) and keyboard layout (XK_SWITCH_MOD) are ignored.
  */
-static uint ignoremod = Mod2Mask | XK_SWITCH_MOD;
+static uint ignoremod = Mod2Mask|XK_SWITCH_MOD;
 
 /*
  * This is the huge key array which defines all compatibility to the Linux
@@ -544,13 +536,15 @@ static Key key[] = {
  * If no match is found, regular selection is used.
  */
 static uint selmasks[] = {
-    [SEL_RECTANGULAR] = Mod1Mask,
+	[SEL_RECTANGULAR] = Mod1Mask,
 };
 
 /*
  * Printable characters in ASCII, used to estimate the advance width
  * of single wide characters.
  */
-static char ascii_printable[] = " !\"#$%&'()*+,-./0123456789:;<=>?"
-                                "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-                                "`abcdefghijklmnopqrstuvwxyz{|}~";
+static char ascii_printable[] =
+	" !\"#$%&'()*+,-./0123456789:;<=>?"
+	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+	"`abcdefghijklmnopqrstuvwxyz{|}~";
+
