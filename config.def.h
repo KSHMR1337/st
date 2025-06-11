@@ -5,6 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
+
 static char *font =
     "Hack Nerd Font Mono:pixelsize=15:antialias=true:autohint=true";
 /* Spare fonts */
@@ -117,9 +118,6 @@ unsigned int tabspaces = 8;
 
 /* bg opacity */
 float alpha = 0.8;
-float alphaUnfocused = 0.6;
-
-/* Purple flavour colors */
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -156,6 +154,7 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
+
 unsigned int defaultbg = 0;
 unsigned int bg = 232, bgUnfocused = 16;
 unsigned int defaultfg = 259;
@@ -226,7 +225,6 @@ ResourcePref resources[] = {
     {"cwscale", FLOAT, &cwscale},
     {"chscale", FLOAT, &chscale},
     {"alpha", FLOAT, &alpha},
-    {"alphaUnfocused", FLOAT, &alphaUnfocused},
 };
 
 /*
@@ -242,13 +240,14 @@ static uint forcemousemod = ShiftMask;
  */
 static MouseShortcut mshortcuts[] = {
     /* mask                 button   function        argument       release
-     * screen
-     */
-    {XK_ANY_MOD, Button2, selpaste, {.i = 0}, 1},
+       screen */
+    {XK_ANY_MOD, Button2, clippaste, {.i = 0}, 1},
     {ShiftMask, Button4, kscrollup, {.i = 1}, 0, S_PRI},
     {ShiftMask, Button5, kscrolldown, {.i = 1}, 0, S_PRI},
-    {XK_ANY_MOD, Button4, ttysend, {.s = "\031"}},
-    {XK_ANY_MOD, Button5, ttysend, {.s = "\005"}},
+    {XK_ANY_MOD, Button4, kscrollup, {.i = 1}, 0, S_PRI},
+    {XK_ANY_MOD, Button5, kscrolldown, {.i = 1}, 0, S_PRI},
+    {XK_ANY_MOD, Button4, ttysend, {.s = "\031"}, 0, S_ALT},
+    {XK_ANY_MOD, Button5, ttysend, {.s = "\005"}, 0, S_ALT},
 };
 
 /* Internal keyboard shortcuts. */
@@ -276,14 +275,14 @@ static Shortcut shortcuts[] = {
     {TERMMOD, XK_V, clippaste, {.i = 0}},
     {TERMMOD, XK_O, changealpha, {.f = +0.05}},
     {TERMMOD, XK_P, changealpha, {.f = -0.05}},
-    //{ TERMMOD,              XK_,           changealphaunfocused, {.f = +0.05}
-    //}, { TERMMOD,              XK_,           changealphaunfocused, {.f =
-    //-0.05} },
     {ShiftMask, XK_Page_Up, kscrollup, {.i = -1}, S_PRI},
     {ShiftMask, XK_Page_Down, kscrolldown, {.i = -1}, S_PRI},
-    {TERMMOD, XK_Y, selpaste, {.i = 0}},
-    {ShiftMask, XK_Insert, selpaste, {.i = 0}},
+    {TERMMOD, XK_Y, clippaste, {.i = 0}},
+    {ShiftMask, XK_Insert, clippaste, {.i = 0}},
     {TERMMOD, XK_Num_Lock, numlock, {.i = 0}},
+    {TERMMOD, XK_U, externalpipe, {.v = openurlcmd}},
+    {TERMMOD, XK_M, externalpipein, {.v = setbgcolorcmd}},
+    {TERMMOD, XK_Escape, keyboard_select, {0}},
 };
 
 /*
@@ -306,12 +305,6 @@ static Shortcut shortcuts[] = {
  * this table sequentially, so any XK_ANY_MOD must be in the last
  * position for a key.
  */
-
-/*
- * If you want keys other than the X11 function keys (0xFD00 - 0xFFFF)
- * to be mapped below, add them to this array.
- */
-static KeySym mappedkeys[] = {-1};
 
 /*
  * State bits to ignore when matching key or button events.  By default,
@@ -554,3 +547,4 @@ static uint selmasks[] = {
 static char ascii_printable[] = " !\"#$%&'()*+,-./0123456789:;<=>?"
                                 "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
                                 "`abcdefghijklmnopqrstuvwxyz{|}~";
+
