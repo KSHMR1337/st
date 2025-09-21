@@ -51,3 +51,28 @@ config_init(Display *dpy)
 		resource_load(db, p->name, p->type, p->dst);
 }
 
+void
+reload_config(int sig)
+{
+	/* Recreate a Display object to have up to date Xresources entries */
+	Display *dpy;
+	if (!(dpy = XOpenDisplay(NULL)))
+		die("Can't open display\n");
+
+	config_init(dpy);
+	xloadcols();
+
+	/* nearly like zoomabs() */
+	xunloadfonts();
+	xloadfonts(font, 0); /* font <- config_init() */
+	xloadsparefonts();
+	cresize(0, 0);
+	redraw();
+	xhints();
+
+	XCloseDisplay(dpy);
+
+	/* from https://st.suckless.org/patches/xresources-with-reload-signal */
+	/* triggers re-render if we're visible */
+	ttywrite("\033[O", 3, 1);
+}

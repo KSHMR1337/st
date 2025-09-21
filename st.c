@@ -21,6 +21,9 @@
 #include "st.h"
 #include "win.h"
 
+#include <X11/keysym.h>
+#include <X11/X.h>
+
 #include "sixel.h"
 
 #if   defined(__linux)
@@ -206,6 +209,7 @@ static CSIEscape csiescseq;
 static STREscape strescseq;
 static int iofd = 1;
 static int cmdfd;
+static int csdfd;
 static pid_t pid;
 sixel_state_t sixel_st;
 
@@ -214,7 +218,7 @@ static const uchar utfmask[UTF_SIZ + 1] = {0xC0, 0x80, 0xE0, 0xF0, 0xF8};
 static const Rune utfmin[UTF_SIZ + 1] = {       0,    0,  0x80,  0x800,  0x10000};
 static const Rune utfmax[UTF_SIZ + 1] = {0x10FFFF, 0x7F, 0x7FF, 0xFFFF, 0x10FFFF};
 
-#include "patches/st_include.h"
+#include "patch/st_include.h"
 
 ssize_t
 xwrite(int fd, const char *s, size_t len)
@@ -711,17 +715,17 @@ sigchld(int a)
 	int stat;
 	pid_t p;
 
-	if ((p = waitpid(pid, &stat, WNOHANG)) < 0)
-		die("waiting for pid %hd failed: %s\n", pid, strerror(errno));
+	while ((p = waitpid(-1, &stat, WNOHANG)) > 0) {
+		if (p == pid) {
+			close(csdfd);
 
-	if (pid != p)
-		return;
-
-	if (WIFEXITED(stat) && WEXITSTATUS(stat))
-		die("child exited with status %d\n", WEXITSTATUS(stat));
-	else if (WIFSIGNALED(stat))
-		die("child terminated due to signal %d\n", WTERMSIG(stat));
-	_exit(0);
+			if (WIFEXITED(stat) && WEXITSTATUS(stat))
+				die("child exited with status %d\n", WEXITSTATUS(stat));
+			else if (WIFSIGNALED(stat))
+				die("child terminated due to signal %d\n", WTERMSIG(stat));
+			_exit(0);
+		}
+	}
 }
 
 void
@@ -752,6 +756,7 @@ int
 ttynew(const char *line, char *cmd, const char *out, char **args)
 {
 	int m, s;
+	struct sigaction sa;
 
 	if (out) {
 		term.mode |= MODE_PRINT;
@@ -802,9 +807,12 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
 		if (pledge("stdio rpath tty proc", NULL) == -1)
 			die("pledge\n");
 #endif
-		close(s);
+		csdfd = s;
 		cmdfd = m;
-		signal(SIGCHLD, sigchld);
+		memset(&sa, 0, sizeof(sa));
+		sigemptyset(&sa.sa_mask);
+		sa.sa_handler = sigchld;
+		sigaction(SIGCHLD, &sa, NULL);
 		break;
 	}
 	return cmdfd;
@@ -1043,7 +1051,7 @@ treset(void)
 	for (i = 0; i < 2; i++) {
 		tmoveto(0, 0);
 		tcursor(CURSOR_SAVE);
-		tclearregion(0, 0, term.col-1, term.row-1);
+		tclearregion(0, 0, term.maxcol-1, term.row-1);
 		tdeleteimages();
 		tswapscreen();
 	}
@@ -1085,7 +1093,7 @@ tscrolldown(int orig, int n)
 	LIMIT(n, 0, term.bot-orig+1);
 
 	tsetdirt(orig, term.bot-n);
-	tclearregion(0, term.bot-n+1, term.col-1, term.bot);
+	tclearregion(0, term.bot-n+1, term.maxcol-1, term.bot);
 
 	for (i = term.bot; i >= orig+n; i--) {
 		temp = term.line[i];
@@ -1133,7 +1141,7 @@ tscrollup(int orig, int n, int copyhist)
 			term.scr = MIN(term.scr + n, HISTSIZE-1);
 	}
 
-	tclearregion(0, orig, term.col-1, orig+n-1);
+	tclearregion(0, orig, term.maxcol-1, orig+n-1);
 	tsetdirt(orig+n, term.bot);
 
 	for (i = orig; i <= term.bot-n; i++) {
@@ -1315,8 +1323,8 @@ tclearregion(int x1, int y1, int x2, int y2)
 	if (y1 > y2)
 		temp = y1, y1 = y2, y2 = temp;
 
-	LIMIT(x1, 0, term.col-1);
-	LIMIT(x2, 0, term.col-1);
+	LIMIT(x1, 0, term.maxcol-1);
+	LIMIT(x2, 0, term.maxcol-1);
 	LIMIT(y1, 0, term.row-1);
 	LIMIT(y2, 0, term.row-1);
 
@@ -1637,7 +1645,7 @@ tsetmode(int priv, int set, const int *args, int narg)
 					break;
 				alt = IS_SET(MODE_ALTSCREEN);
 				if (alt) {
-					tclearregion(0, 0, term.col-1, term.row-1);
+					tclearregion(0, 0, term.maxcol-1, term.row-1);
 				}
 				if (set ^ alt) /* set is always 1 or 0 */
 					tswapscreen();
@@ -1705,7 +1713,7 @@ csihandle(void)
 	int n = 0, len;
 	ImageList *im, *next;
 	int pi, pa;
-	int maxcol = term.col;
+	int maxcol = term.maxcol;
 
 	switch (csiescseq.mode[0]) {
 	default:
@@ -1808,7 +1816,7 @@ csihandle(void)
 				tclearregion(0, term.c.y+1, maxcol-1, term.row-1);
 			break;
 		case 1: /* above */
-			if (term.c.y > 1)
+			if (term.c.y > 0)
 				tclearregion(0, 0, maxcol-1, term.c.y-1);
 			tclearregion(0, term.c.y, term.c.x, term.c.y);
 			break;
@@ -1983,6 +1991,28 @@ csihandle(void)
 			n = snprintf(buffer, sizeof buffer, "\033[8;%d;%dt", term.row, term.col);
 			ttywrite(buffer, n, 1);
 			break;
+		case 22: /* pust current title on stack */
+			switch (csiescseq.arg[1]) {
+			case 0:
+			case 1:
+			case 2:
+				xpushtitle();
+				break;
+			default:
+				goto unknown;
+			}
+			break;
+		case 23: /* pop last title from stack */
+			switch (csiescseq.arg[1]) {
+			case 0:
+			case 1:
+			case 2:
+				xsettitle(NULL, 1);
+				break;
+			default:
+				goto unknown;
+			}
+			break;
 		default:
 			goto unknown;
 		}
@@ -2083,7 +2113,7 @@ strhandle(void)
 		switch (par) {
 		case 0:
 			if (narg > 1) {
-				xsettitle(strescseq.args[1]);
+				xsettitle(strescseq.args[1], 0);
 				xseticontitle(strescseq.args[1]);
 			}
 			return;
@@ -2093,7 +2123,7 @@ strhandle(void)
 			return;
 		case 2:
 			if (narg > 1)
-				xsettitle(strescseq.args[1]);
+				xsettitle(strescseq.args[1], 0);
 			return;
 		case 52:
 			if (narg > 2 && allowwindowops) {
@@ -2154,7 +2184,7 @@ strhandle(void)
 		}
 		break;
 	case 'k': /* old title set compatibility */
-		xsettitle(strescseq.args[0]);
+		xsettitle(strescseq.args[0], 0);
 		return;
 	case 'P': /* DCS -- Device Control String */
 		if (IS_SET(MODE_SIXEL)) {
@@ -2213,7 +2243,7 @@ strhandle(void)
 			} else {
 				term.images = newimages;
 			}
-			x2 = MIN(x2, term.col) - 1;
+			x2 = MIN(x2, term.maxcol) - 1;
 			if (IS_SET(MODE_SIXEL_SDM)) {
 				/* Sixel display mode: put the sixel in the upper left corner of
 				 * the screen, disable scrolling (the sixel will be truncated if
@@ -2662,6 +2692,7 @@ eschandle(uchar ascii)
 		break;
 	case 'c': /* RIS -- Reset to initial state */
 		treset();
+		xfreetitlestack();
 		resettitle();
 		xloadcols();
 		xsetmode(0, MODE_HIDE);
@@ -2901,12 +2932,21 @@ void
 tresize(int col, int row)
 {
 	int i, j;
-	int minrow = MIN(row, term.row);
-	int mincol = MIN(col, term.col);
+	int tmp = col;
+	int minrow, mincol;
+
+	if (!term.maxcol)
+		term.maxcol = term.col;
+	col = MAX(col, term.maxcol);
+	minrow = MIN(row, term.row);
+	mincol = MIN(col, term.maxcol);
 	int *bp;
 	int x2;
 	Line line;
 	ImageList *im, *next;
+
+	if ( row < term.row  || col < term.col )
+		toggle_winmode(trt_kbdselect(XK_Escape, NULL, 0));
 
 	if (col < 1 || row < 1) {
 		fprintf(stderr,
@@ -2953,10 +2993,10 @@ tresize(int col, int row)
 		term.line[i] = xmalloc(col * sizeof(Glyph));
 		term.alt[i] = xmalloc(col * sizeof(Glyph));
 	}
-	if (col > term.col)
+	if (col > term.maxcol)
 	{
-		bp = term.tabs + term.col;
-		memset(bp, 0, sizeof(*term.tabs) * (col - term.col));
+		bp = term.tabs + term.maxcol;
+		memset(bp, 0, sizeof(*term.tabs) * (col - term.maxcol));
 
 		while (--bp > term.tabs && !*bp)
 			/* nothing */ ;
@@ -2965,7 +3005,8 @@ tresize(int col, int row)
 	}
 
 	/* update terminal size */
-	term.col = col;
+	term.col = tmp;
+	term.maxcol = col;
 	term.row = row;
 
 	/* reset scrolling region */
@@ -3012,7 +3053,7 @@ tresize(int col, int row)
 void
 resettitle(void)
 {
-	xsettitle(NULL);
+	xsettitle(NULL, 0);
 }
 
 void
@@ -3029,7 +3070,7 @@ drawregion(int x1, int y1, int x2, int y2)
 	}
 }
 
-#include "patches/st_include.c"
+#include "patch/st_include.c"
 
 void
 draw(void)
