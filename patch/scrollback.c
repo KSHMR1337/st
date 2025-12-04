@@ -1,3 +1,19 @@
+static void
+seladjust(int delta)
+{
+	if (sel.ob.x == -1)
+		return;
+
+	if (sel.alt != 0)
+		return;
+
+	sel.ob.y += delta;
+	sel.oe.y += delta;
+
+	selnormalize();
+	tsetdirt(sel.nb.y, sel.ne.y);
+}
+
 void
 kscrolldown(const Arg* a)
 {
@@ -11,8 +27,9 @@ kscrolldown(const Arg* a)
 
 	if (term.scr > 0) {
 		term.scr -= n;
-		selscroll(0, -n);
+		seladjust(-n);
 		tfulldirt();
+		draw();
 	}
 
 	scroll_images(-1*n);
@@ -34,8 +51,9 @@ kscrollup(const Arg* a)
 
 	if (term.scr <= HISTSIZE-n) {
 		term.scr += n;
-		selscroll(0, n);
+		seladjust(n);
 		tfulldirt();
+		draw();
 	}
 
 	scroll_images(n);
