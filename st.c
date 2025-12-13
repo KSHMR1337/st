@@ -499,6 +499,32 @@ selected(int x, int y)
 	    && (y != sel.ne.y || x <= sel.ne.x);
 }
 
+int
+selextend_type(void)
+{
+	return sel.type;
+}
+
+int
+selextend_mode(void)
+{
+	return sel.mode;
+}
+
+int
+selexists(void)
+{
+	return sel.ob.x != -1;
+}
+
+void
+selreactivate(void)
+{
+	if (sel.ob.x == -1)
+		return;
+	sel.mode = SEL_READY;
+}
+
 void
 selsnap(int *x, int *y, int direction)
 {

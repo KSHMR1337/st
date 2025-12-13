@@ -436,22 +436,42 @@ bpress(XEvent *e)
 
 	if (btn == Button1) {
 		/*
-		 * If the user clicks below predefined timeouts specific
-		 * snapping behaviour is exposed.
+		 * If shift is held, extend existing selection.
+		 * This works even if the selection was finalized (mode == SEL_IDLE)
+		 * as long as there's still a previous selection (ob.x != -1).
 		 */
-		clock_gettime(CLOCK_MONOTONIC, &now);
-		if (TIMEDIFF(now, xsel.tclick2) <= tripleclicktimeout) {
-			snap = SNAP_LINE;
-		} else if (TIMEDIFF(now, xsel.tclick1) <= doubleclicktimeout) {
-			snap = SNAP_WORD;
+		if (e->xbutton.state & ShiftMask) {
+			if (selextend_mode() != SEL_IDLE) {
+				/* Extend currently active selection */
+				selextend(evcol(e), evrow(e), selextend_type(), 0);
+			} else if (selexists()) {
+				/*
+				 * Reactivate previous selection and extend it.
+				 * selexists() checks if ob.x != -1
+				 */
+				selreactivate();
+				selextend(evcol(e), evrow(e), selextend_type(), 0);
+			}
+			/* If no selection exists, shift+click does nothing */
+			return;
 		} else {
-			snap = 0;
+			/*
+			 * If the user clicks below predefined timeouts specific
+			 * snapping behaviour is exposed.
+			 */
+			clock_gettime(CLOCK_MONOTONIC, &now);
+			if (TIMEDIFF(now, xsel.tclick2) <= tripleclicktimeout) {
+				snap = SNAP_LINE;
+			} else if (TIMEDIFF(now, xsel.tclick1) <= doubleclicktimeout) {
+				snap = SNAP_WORD;
+			} else {
+				snap = 0;
+			}
+			xsel.tclick2 = xsel.tclick1;
+			xsel.tclick1 = now;
+
+			selstart(evcol(e), evrow(e), snap);
 		}
-		xsel.tclick2 = xsel.tclick1;
-		xsel.tclick1 = now;
-
-		selstart(evcol(e), evrow(e), snap);
-
 	}
 }
 
@@ -674,7 +694,17 @@ brelease(XEvent *e)
 		return;
 
 	if (btn == Button1) {
-		mousesel(e, 1);
+		/*
+		 * If shift was held during the click, we extended the selection
+		 * in bpress(). Now finalize it.
+		 */
+		if (e->xbutton.state & ShiftMask) {
+			selextend(evcol(e), evrow(e), selextend_type(), 1);
+			if (selextend_mode() != SEL_IDLE)
+				setsel(getsel(), e->xbutton.time);
+		} else {
+			mousesel(e, 1);
+		}
 	}
 
 }
@@ -682,13 +712,20 @@ brelease(XEvent *e)
 void
 bmotion(XEvent *e)
 {
-
 	if (IS_SET(MODE_MOUSE) && !(e->xbutton.state & forcemousemod)) {
 		mousereport(e);
 		return;
 	}
 
-	mousesel(e, 0);
+	/*
+	 * If Shift is held and we're in selection mode, handle as a
+	 * shift-extend operation, not a normal drag.
+	 */
+	if ((e->xbutton.state & ShiftMask) && selextend_mode() != SEL_IDLE) {
+		selextend(evcol(e), evrow(e), selextend_type(), 0);
+	} else {
+		mousesel(e, 0);
+	}
 }
 
 void
